@@ -436,6 +436,9 @@ ProcessCode RootTrackStatesWriter::writeT(const AlgorithmContext& ctx,
             particleIds.push_back(simHit.particleId().value());
           }
         }
+        else{
+          ACTS_INFO("no hit ids :(");
+        }
 
         // fill the truth hit info
         m_t_x.push_back(truthPos4[Acts::ePos0]);

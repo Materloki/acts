@@ -43,6 +43,7 @@
 #include "ActsExamples/Io/Root/RootTrackStatesWriter.hpp"
 #include "ActsExamples/Io/Root/RootTrackSummaryWriter.hpp"
 #include "ActsExamples/Io/Root/RootVertexWriter.hpp"
+#include "ActsExamples/Io/Root/RootHypergraphWriter.hpp"
 #include "ActsExamples/MaterialMapping/IMaterialWriter.hpp"
 #include "ActsExamples/Plugins/Obj/ObjPropagationStepsWriter.hpp"
 #include "ActsExamples/Plugins/Obj/ObjTrackingGeometryWriter.hpp"
@@ -334,6 +335,11 @@ void addOutput(Context& ctx) {
       inputTracks, inputParticles, inputTrackParticleMatching, filePath,
       treeName, fileMode, writeCovMat, writeGsfSpecific, writeGx2fSpecific);
 
+  ACTS_PYTHON_DECLARE_WRITER(
+      ActsExamples::RootHypergraphWriter, mex, "RootHypergraphWriter",
+      inputTracks, inputParticles, inputTrackParticleMatching, inputSimHits, 
+      inputMeasurementSimHitsMap,  filePath, treeName, fileMode);
+  
   ACTS_PYTHON_DECLARE_WRITER(
       ActsExamples::VertexPerformanceWriter, mex, "VertexPerformanceWriter",
       inputVertices, inputTracks, inputTruthVertices, inputParticles,

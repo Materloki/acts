@@ -21,6 +21,7 @@ add_library(
   src/RootVertexReader.cpp
   src/RootVertexWriter.cpp
   src/RootAthenaDumpReader.cpp
+  src/RootHypergraphWriter.cpp
 )
 target_include_directories(
   ActsExamplesIoRoot

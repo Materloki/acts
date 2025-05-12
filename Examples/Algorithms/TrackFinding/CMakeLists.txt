@@ -9,6 +9,8 @@ add_library(
   src/TrackParamsEstimationAlgorithm.cpp
   src/MuonHoughSeeder.cpp
   src/GbtsSeedingAlgorithm.cpp
+  src/HyperGraphAlgorithm.cpp
+  src/HyperGraphAlgorithmFunction.cpp
 )
 
 target_include_directories(

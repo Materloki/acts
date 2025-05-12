@@ -40,6 +40,8 @@
 #include <utility>
 
 #include "TruthVertexSeeder.hpp"
+#include "GaussianTrackDensity3D.hpp"
+#include "TDVFinder3D.hpp"
 #include "VertexingHelpers.hpp"
 
 namespace ActsExamples {
@@ -112,14 +114,22 @@ AdaptiveMultiVertexFinderAlgorithm::makeVertexSeeder() const {
     return std::make_unique<Seeder>(seederConfig);
   }
 
-  if (m_cfg.seedFinder == SeedFinder::GaussianSeeder) {
+  if (m_cfg.seedFinder == SeedFinder::GaussianSeeder && m_cfg.useTime) {
+    using Seeder = Acts::TDVFinder3D;
+    Acts::GaussianTrackDensity3D::Config trkDensityCfg;
+    trkDensityCfg.extractParameters
+        .connect<&Acts::InputTrack::extractParameters>();
+    return std::make_unique<Seeder>(Seeder::Config{trkDensityCfg});
+  }
+
+  if (m_cfg.seedFinder == SeedFinder::GaussianSeeder && m_cfg.useTime == false) {
+//  if (m_cfg.seedFinder == SeedFinder::GaussianSeeder) {
     using Seeder = Acts::TrackDensityVertexFinder;
     Acts::GaussianTrackDensity::Config trkDensityCfg;
     trkDensityCfg.extractParameters
         .connect<&Acts::InputTrack::extractParameters>();
     return std::make_unique<Seeder>(Seeder::Config{trkDensityCfg});
   }
-
   if (m_cfg.seedFinder == SeedFinder::AdaptiveGridSeeder) {
     // Set up track density used during vertex seeding
     Acts::AdaptiveGridTrackDensity::Config trkDensityCfg;

@@ -116,7 +116,7 @@ ProcessCode CsvTrackWriter::writeT(const AlgorithmContext& context,
 
     // track info
     TrackInfo toAdd;
-    toAdd.trackId = trackId;
+    toAdd.trackId = track.index();
     if (tracks.hasColumn(Acts::hashString("trackGroup"))) {
       toAdd.seedID = seedNumber(track);
     } else {

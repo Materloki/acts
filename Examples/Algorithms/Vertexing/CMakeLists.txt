@@ -5,6 +5,8 @@ add_library(
   src/VertexFitterAlgorithm.cpp
   src/SingleSeedVertexFinderAlgorithm.cpp
   src/TruthVertexSeeder.cpp
+  src/TDVFinder3D.cpp
+  src/GaussianTrackDensity3D.cpp
 )
 target_include_directories(
   ActsExamplesVertexing

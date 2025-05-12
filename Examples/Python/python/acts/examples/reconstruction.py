@@ -1416,6 +1416,7 @@ def addTrackWriters(
     writeStates: bool = True,
     writeSummary: bool = True,
     writeCKFperformance: bool = True,
+    writeHypergraph: bool = False,
     logLevel: Optional[acts.logging.Level] = None,
     writeCovMat=False,
 ):
@@ -1460,6 +1461,25 @@ def addTrackWriters(
                 writeCovMat=writeCovMat,
             )
             s.addWriter(trackSummaryWriter)
+
+        if writeHypergraph:
+            # write hypergraph
+            HypergraphWriter = acts.examples.RootHypergraphWriter(
+                level=customLogLevel(),
+                inputTracks=tracks,
+
+                # @note The full particles collection is used here to avoid lots of warnings
+                # since the unselected CKF track might have a majority particle not in the
+                # filtered particle collection. This could be avoided when a separate track
+                # selection algorithm is used.
+                inputParticles="particles_selected",
+                inputTrackParticleMatching="track_particle_matching",
+                inputSimHits="simhits",
+                inputMeasurementSimHitsMap="measurement_simhits_map",
+                filePath=str(outputDirRoot / f"hypergraph.root"),
+                treeName="hypergraph"
+            )
+            s.addWriter(HypergraphWriter)
 
         if writeCKFperformance:
             # Write CKF performance data

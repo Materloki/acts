@@ -27,6 +27,7 @@
 #include "ActsExamples/TrackFinding/SpacePointMaker.hpp"
 #include "ActsExamples/TrackFinding/TrackFindingAlgorithm.hpp"
 #include "ActsExamples/TrackFinding/TrackParamsEstimationAlgorithm.hpp"
+#include "ActsExamples/TrackFinding/HyperGraphAlgorithm.hpp"
 
 #include <array>
 #include <cstddef>
@@ -334,6 +335,54 @@ void addTrackFinding(Context& ctx) {
     ACTS_PYTHON_MEMBER(maxPixelHoles);
     ACTS_PYTHON_MEMBER(maxStripHoles);
     ACTS_PYTHON_STRUCT_END();
+  }
+
+  {
+    using Alg = ActsExamples::HyperGraphAlgorithm;
+    using Config = Alg::Config;
+
+    auto alg =
+        py::class_<Alg, ActsExamples::IAlgorithm, std::shared_ptr<Alg>>(
+            mex, "HyperGraphAlgorithm")
+            .def(py::init<const Config&, Acts::Logging::Level>(),
+                 py::arg("config"), py::arg("level"))
+            .def_property_readonly("config", &Alg::config)
+            .def_static("makeTrackFinderFunction",
+                        [](std::shared_ptr<const Acts::TrackingGeometry>
+                               trackingGeometry,
+                           std::shared_ptr<const Acts::MagneticFieldProvider>
+                               magneticField,
+                           Logging::Level level) {
+                          return Alg::makeTrackFinderFunction(
+                              trackingGeometry, magneticField,
+                              *Acts::getDefaultLogger("TrackFinding", level));
+                        });
+
+    py::class_<Alg::TrackFinderFunction,
+               std::shared_ptr<Alg::TrackFinderFunction>>(
+        alg, "TrackFinderFunction");
+
+    auto c = py::class_<Config>(alg, "Config").def(py::init<>());
+    ACTS_PYTHON_STRUCT_BEGIN(c, Config);
+    ACTS_PYTHON_MEMBER(inputMeasurements);
+    ACTS_PYTHON_MEMBER(inputSourceLinks);
+    ACTS_PYTHON_MEMBER(inputInitialTrackParameters);
+    ACTS_PYTHON_MEMBER(inputSeeds);
+    ACTS_PYTHON_MEMBER(outputTracks);
+    ACTS_PYTHON_MEMBER(trackingGeometry);
+    ACTS_PYTHON_MEMBER(magneticField);
+    ACTS_PYTHON_MEMBER(findTracks);
+    ACTS_PYTHON_MEMBER(measurementSelectorCfg);
+    ACTS_PYTHON_MEMBER(trackSelectorCfg);
+    ACTS_PYTHON_MEMBER(maxSteps);
+    ACTS_PYTHON_MEMBER(seedDeduplication);
+    ACTS_PYTHON_MEMBER(stayOnSeed);
+    ACTS_PYTHON_MEMBER(pixelVolumes);
+    ACTS_PYTHON_MEMBER(stripVolumes);
+    ACTS_PYTHON_MEMBER(maxPixelHoles);
+    ACTS_PYTHON_MEMBER(maxStripHoles);
+    ACTS_PYTHON_STRUCT_END();
+
   }
 
   {
