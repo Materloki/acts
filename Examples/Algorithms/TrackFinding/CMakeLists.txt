@@ -12,6 +12,7 @@ add_library(
     src/GbtsSeedingAlgorithm.cpp
     src/TrackParamsLookupEstimation.cpp
     src/GridTripletSeedingAlgorithm.cpp
+    src/HyperGraphAlgorithm.cpp
 )
 
 target_include_directories(

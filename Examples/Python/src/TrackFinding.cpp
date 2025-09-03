@@ -27,6 +27,7 @@
 #include "ActsExamples/TrackFinding/TrackFindingAlgorithm.hpp"
 #include "ActsExamples/TrackFinding/TrackParamsEstimationAlgorithm.hpp"
 #include "ActsExamples/TrackFinding/TrackParamsLookupEstimation.hpp"
+#include "ActsExamples/TrackFinding/HyperGraphAlgorithm.hpp"
 
 #include <cstddef>
 #include <memory>
@@ -238,6 +239,23 @@ void addTrackFinding(Context& ctx) {
                        seedDeduplication, stayOnSeed, pixelVolumeIds,
                        stripVolumeIds, maxPixelHoles, maxStripHoles, trimTracks,
                        constrainToVolumeIds, endOfWorldVolumeIds);
+  }
+
+  {
+    using Alg = ActsExamples::HyperGraphAlgorithm;
+    using Config = Alg::Config;
+
+    auto alg =
+        py::class_<Alg, ActsExamples::IAlgorithm, std::shared_ptr<Alg>>(
+            mex, "HyperGraphAlgorithm")
+            .def(py::init<const Config&, Acts::Logging::Level>(),
+                 py::arg("config"), py::arg("level"))
+            .def_property_readonly("config", &Alg::config);
+
+    auto c = py::class_<Config>(alg, "Config").def(py::init<>());
+    ACTS_PYTHON_STRUCT(c, inputMeasurements, inputInitialTrackParameters,
+                       inputSeeds, outputTracks, trackingGeometry,
+                       magneticField, seedDeduplication, stayOnSeed);
   }
 
   {
