@@ -250,12 +250,31 @@ void addTrackFinding(Context& ctx) {
             mex, "HyperGraphAlgorithm")
             .def(py::init<const Config&, Acts::Logging::Level>(),
                  py::arg("config"), py::arg("level"))
-            .def_property_readonly("config", &Alg::config);
+                 .def_property_readonly("config", &Alg::config)
+                 .def_static("makeTrackFinderFunction",
+                              [](std::shared_ptr<const Acts::TrackingGeometry>
+                                      trackingGeometry,
+                                 std::shared_ptr<const Acts::MagneticFieldProvider>
+                                      magneticField,
+                                 Logging::Level level) {
+                                return Alg::makeTrackFinderFunction(
+                                      std::move(trackingGeometry),
+                                      std::move(magneticField),
+                                      *Acts::getDefaultLogger("HyperGraph", level));
+                                 });
+    
+    py::class_<Alg::TrackFinderFunction,
+               std::shared_ptr<Alg::TrackFinderFunction>>(
+        alg, "TrackFinderFunction");
 
     auto c = py::class_<Config>(alg, "Config").def(py::init<>());
     ACTS_PYTHON_STRUCT(c, inputMeasurements, inputInitialTrackParameters,
                        inputSeeds, outputTracks, trackingGeometry,
-                       magneticField, seedDeduplication, stayOnSeed);
+                       magneticField, findTracks, measurementSelectorCfg,
+                       trackSelectorCfg, maxSteps, seedDeduplication, 
+                       stayOnSeed, pixelVolumeIds, stripVolumeIds, maxPixelHoles,
+                       maxStripHoles, trimTracks, constrainToVolumeIds,
+                       endOfWorldVolumeIds);
   }
 
   {

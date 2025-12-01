@@ -13,6 +13,8 @@ add_library(
     src/TrackParamsLookupEstimation.cpp
     src/GridTripletSeedingAlgorithm.cpp
     src/HyperGraphAlgorithm.cpp
+    src/HyperGraphAlgorithmFunction.cpp
+    src/MultiTrackFinderError.cpp
 )
 
 target_include_directories(

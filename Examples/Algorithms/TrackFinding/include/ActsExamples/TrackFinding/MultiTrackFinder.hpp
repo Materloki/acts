@@ -97,7 +97,7 @@ MultiTrackFinderOptions(
   bool multipleScattering = true;
 
   /// Whether to consider energy loos.
-  bool energyLoss = true; 
+  bool energyLoss = false; 
 
 };
 
@@ -195,7 +195,7 @@ class MultiTrackFinder {
         bool energyLoss = true;
 
         /// Skip the pre propagation call. This effectively skips the first surface
-        bool skipPrePropagationUpdate = false;
+        // bool skipPrePropagationUpdate = false;
 
 
         /// Calibration context for the finding run
@@ -332,7 +332,7 @@ class MultiTrackFinder {
           stepper.initialize(state.stepping, currentState.filtered(),
                               currentState.filteredCovariance(),
                               stepper.particleHypothesis(state.stepping),
-                              currentState.setReferenceSurface());
+                              currentState.referenceSurface());
           
           // Reset the navigation state
           // Set targetSurface to nullptr for forward filtering
@@ -400,16 +400,17 @@ class MultiTrackFinder {
           } else {
             ACTS_VERBOSE("Passive surface " << surface->geometryId()
                                             << " detected.");
-            return Result<void>::success;
+            return Result<void>::success();
           }
 
           // Transport the covariance to the surface
+          /*
           if (isMaterialOnly) {
             stepper.transportCovarianceToCurvilinear(state.stepping);
           } else {
             stepper.transportCovarianceToBound(state.stepping,*surface);
           }
-
+           */
           // Update state and stepper with pre material effects
           /// FIXME: we don't need this, right?
           /*materialInteractor(surface, state, stepper, navigator, MaterialUpdateStage::PreUpdate);*/
@@ -532,7 +533,7 @@ class MultiTrackFinder {
           // Update stepping state using filtered parameters of last track
           // state on this surface
           /// @FIXME: We dont need update or material interactor, right?
-          /*
+          
           stepper.update(state.stepping,
                           MultiTrajectoryHelpers::freeFiltered(
                               state.options.geoContext, currentState),
@@ -540,10 +541,10 @@ class MultiTrackFinder {
                               currentState.filteredCovariance(),*surface);
 
           ACTS_VERBOSE("Stepping state is updated with filtered parameter:");
-          ACTS_VERBOSE("-> " << currentState.filterd().transpose()
+          ACTS_VERBOSE("-> " << currentState.filtered().transpose()
                               << "of track state with tip = "
                               << currentState.index());
-          */
+          
         }
 
         // Update state and stepper with post material effects
@@ -612,6 +613,9 @@ class MultiTrackFinder {
               return updateRes.error();
             }
             */
+            trackState.filtered() = trackState.predicted();
+            trackState.filteredCovariance() = trackState.predictedCovariance();
+            
             ACTS_VERBOSE("Appended measurement track state with tip = "
                           << newBranch.tipIndex());
             // Set the measurement flag
@@ -687,7 +691,11 @@ class MultiTrackFinder {
 
         // Set the track state flags
         auto typeFlags = trackStateProxy.typeFlags();
-        if (trackStateProxy.referenceSurface().surfaceMaterial != nullptr) {
+        if (trackStateProxy.referenceSurface().surfaceMaterial() != nullptr) {
+          typeFlags.set(TrackStateFlag::MaterialFlag);
+        }
+        typeFlags.set(TrackStateFlag::ParameterFlag);
+        if (isSensitive) {
           typeFlags.set(expectMeasurements ? TrackStateFlag::HoleFlag
                                           : TrackStateFlag::NoExpectedHitFlag);
         }
@@ -845,7 +853,6 @@ public:
     multiTrackActor.targetReached.surface = tfOptions.targetSurface;
     multiTrackActor.multipleScattering = tfOptions.multipleScattering;
     multiTrackActor.energyLoss = tfOptions.energyLoss;
-    multiTrackActor.skipPrePropagationUpdate = tfOptions.skipPrePropagationUpdate;
     multiTrackActor.actorLogger = m_actorLogger.get();
     multiTrackActor.updaterLogger = m_updaterLogger.get();
     multiTrackActor.calibrationContextPtr = &tfOptions.calibrationContext.get();

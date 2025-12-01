@@ -440,7 +440,7 @@ ProcessCode HyperGraphAlgorithm::execute(const AlgorithmContext& ctx) const {
 
       if (m_cfg.stayOnSeed) {
         // TODO measurement selector
-        // measSel.setSeed(seed);
+        measSel.setSeed(seed);
       }
 
       // Clear trackContainerTemp and trackStateContainerTemp

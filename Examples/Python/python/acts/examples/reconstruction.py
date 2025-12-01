@@ -1693,6 +1693,96 @@ def addCKFTracks(
     return s
 
 
+def addHyperGraphTracks(
+    s: acts.examples.Sequencer,
+    trackingGeometry: acts.TrackingGeometry,
+    field: acts.MagneticFieldProvider,
+    trackSelectorConfig: Optional[
+        Union[TrackSelectorConfig, List[TrackSelectorConfig]]
+    ] = None,
+    ckfConfig: CkfConfig = CkfConfig(),
+    logLevel: Optional[acts.logging.Level] = None,
+) -> None:
+    customLogLevel = acts.examples.defaultLogging(s, logLevel)
+
+    tslist = (
+        []
+        if trackSelectorConfig is None
+        else (
+            [trackSelectorConfig]
+            if type(trackSelectorConfig) is TrackSelectorConfig
+            else trackSelectorConfig
+        )
+    )
+
+    if len(tslist) > 1:
+        cutSets = []
+        for c in tslist:
+            defKW = trackSelectorDefaultKWArgs(c)
+            defKW.pop("absEtaMax", None)
+            cutSets += [acts.TrackSelector.Config(**(defKW))]
+    else:
+        cutSets = [
+            acts.TrackSelector.Config(**(trackSelectorDefaultKWArgs(c))) for c in tslist
+        ]
+
+    if len(tslist) == 0:
+        trkSelCfg = None
+    elif len(tslist) == 1:
+        trkSelCfg = cutSets[0]
+    else:
+        trkSelCfg = acts.TrackSelector.EtaBinnedConfig(
+            cutSets=cutSets,
+            absEtaEdges=[cutSets[0].absEtaMin] + [c.absEta[1] for c in tslist],
+        )
+   # Setup the track finding algorithm with CKF
+    # It takes all the source links created from truth hit smearing, seeds from
+    # truth particle smearing and source link selection config
+    trackFinder = acts.examples.HyperGraphAlgorithm(
+        level=customLogLevel(),
+        measurementSelectorCfg=acts.MeasurementSelector.Config(
+            [
+                (
+                    acts.GeometryIdentifier(),
+                    (
+                        [],
+                        [ckfConfig.chi2CutOffMeasurement],
+                        [ckfConfig.chi2CutOffOutlier],
+                        [ckfConfig.numMeasurementsCutOff],
+                    ),
+                )
+            ]
+        ),
+        inputMeasurements="measurements",
+        inputInitialTrackParameters="estimatedparameters",
+        inputSeeds=(
+            "estimatedseeds"
+            if ckfConfig.seedDeduplication or ckfConfig.stayOnSeed
+            else ""
+        ),
+        outputTracks="ckf_tracks",
+        findTracks=acts.examples.HyperGraphAlgorithm.makeTrackFinderFunction(
+            trackingGeometry, field, customLogLevel()
+        ),
+        **acts.examples.defaultKWArgs(
+            trackingGeometry=trackingGeometry,
+            magneticField=field,
+            trackSelectorCfg=trkSelCfg,
+            maxSteps=ckfConfig.maxSteps,
+            seedDeduplication=ckfConfig.seedDeduplication,
+            stayOnSeed=ckfConfig.stayOnSeed,
+            pixelVolumeIds=ckfConfig.pixelVolumes,
+            stripVolumeIds=ckfConfig.stripVolumes,
+            maxPixelHoles=ckfConfig.maxPixelHoles,
+            maxStripHoles=ckfConfig.maxStripHoles,
+            trimTracks=ckfConfig.trimTracks,
+            constrainToVolumeIds=ckfConfig.constrainToVolumes,
+            endOfWorldVolumeIds=ckfConfig.endOfWorldVolumes,
+        ),
+    )
+    s.addAlgorithm(trackFinder)
+    s.addWhiteboardAlias("tracks", trackFinder.config.outputTracks)
+
 def addGx2fTracks(
     s: acts.examples.Sequencer,
     trackingGeometry: acts.TrackingGeometry,

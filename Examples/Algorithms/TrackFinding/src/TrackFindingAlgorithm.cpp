@@ -465,7 +465,7 @@ ProcessCode TrackFindingAlgorithm::execute(const AlgorithmContext& ctx) const {
         if (auto it = discoveredSeeds.find(seedIdentifier);
             it != discoveredSeeds.end() && it->second) {
           m_nDeduplicatedSeeds++;
-          ACTS_VERBOSE("Skipping seed " << iSeed << " due to deduplication.");
+          ACTS_INFO("Skipping seed " << iSeed << " due to deduplication.");
           continue;
         }
       }
@@ -482,6 +482,7 @@ ProcessCode TrackFindingAlgorithm::execute(const AlgorithmContext& ctx) const {
         initialParameters.at(iSeed);
 
     auto firstRootBranch = tracksTemp.makeTrack();
+
     auto firstResult = (*m_cfg.findTracks)(firstInitialParameters, firstOptions,
                                            tracksTemp, firstRootBranch);
     nSeed++;
