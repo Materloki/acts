@@ -27,6 +27,7 @@
 #include "ActsExamples/Io/Root/TrackFinderPerformanceWriter.hpp"
 #include "ActsExamples/Io/Root/TrackFitterPerformanceWriter.hpp"
 #include "ActsExamples/Io/Root/VertexNTupleWriter.hpp"
+#include "ActsExamples/Io/Root/RootHypergraphWriter.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -107,6 +108,14 @@ void addRootOutput(Context& ctx) {
       inputTrackParameters, inputProtoTracks, inputParticles, inputSimHits,
       inputMeasurementParticlesMap, inputMeasurementSimHitsMap, filePath,
       treeName, fileMode);
+
+
+  ACTS_PYTHON_DECLARE_WRITER(
+      ActsExamples::RootHypergraphWriter, mex, "RootHypergraphWriter",
+      inputTracks, inputParticles, inputTrackParticleMatching, inputSimHits, 
+      inputMeasurementSimHitsMap,  filePath, treeName, fileMode);
+
+  
 
   ACTS_PYTHON_DECLARE_WRITER(
       ActsExamples::RootMaterialTrackWriter, mex, "RootMaterialTrackWriter",

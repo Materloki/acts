@@ -1701,6 +1701,12 @@ def addHyperGraphTracks(
         Union[TrackSelectorConfig, List[TrackSelectorConfig]]
     ] = None,
     ckfConfig: CkfConfig = CkfConfig(),
+    outputDirCsv: Optional[Union[Path, str]] = None,
+    outputDirRoot: Optional[Union[Path, str]] = None,
+    writeTrackSummary: bool = True,
+    writeTrackStates: bool = True,
+    writePerformance: bool = True,
+    writeCovMat=False,
     logLevel: Optional[acts.logging.Level] = None,
 ) -> None:
     customLogLevel = acts.examples.defaultLogging(s, logLevel)
@@ -1782,6 +1788,35 @@ def addHyperGraphTracks(
     )
     s.addAlgorithm(trackFinder)
     s.addWhiteboardAlias("tracks", trackFinder.config.outputTracks)
+    matchAlg = acts.examples.TrackTruthMatcher(
+        level=acts.logging.INFO,
+        inputTracks=trackFinder.config.outputTracks,
+        inputParticles="particles_selected",
+        inputMeasurementParticlesMap="measurement_particles_map",
+        outputTrackParticleMatching="ckf_track_particle_matching",
+        outputParticleTrackMatching="ckf_particle_track_matching",
+        doubleMatching=True,
+    )
+    s.addAlgorithm(matchAlg)
+    s.addWhiteboardAlias(
+        "track_particle_matching", matchAlg.config.outputTrackParticleMatching
+    )
+    s.addWhiteboardAlias(
+        "particle_track_matching", matchAlg.config.outputParticleTrackMatching
+    )
+    addTrackWriters(
+        s,
+        name="ckf",
+        tracks=trackFinder.config.outputTracks,
+        outputDirCsv=outputDirCsv,
+        outputDirRoot=outputDirRoot,
+        writeStates=writeTrackStates,
+        writeSummary=writeTrackSummary,
+        writeFinderPerformance=writePerformance,
+        writeHypergraph=True,
+        logLevel=acts.logging.INFO,
+        writeCovMat=False,
+    )
 
 def addGx2fTracks(
     s: acts.examples.Sequencer,
@@ -1853,6 +1888,7 @@ def addTrackWriters(
     writeStates: bool = False,
     writeFitterPerformance: bool = False,
     writeFinderPerformance: bool = False,
+    writeHypergraph: bool = False,
     logLevel: Optional[acts.logging.Level] = None,
     writeCovMat=False,
 ):
@@ -1874,6 +1910,25 @@ def addTrackWriters(
                 writeCovMat=writeCovMat,
             )
             s.addWriter(trackSummaryWriter)
+
+        if writeHypergraph:
+            # write hypergraph
+            HypergraphWriter = acts.examples.RootHypergraphWriter(
+                level=customLogLevel(),
+                inputTracks=tracks,
+
+                # @note The full particles collection is used here to avoid lots of warnings
+                # since the unselected CKF track might have a majority particle not in the
+                # filtered particle collection. This could be avoided when a separate track
+                # selection algorithm is used.
+                inputParticles="particles_selected",
+                inputTrackParticleMatching="track_particle_matching",
+                inputSimHits="simhits",
+                inputMeasurementSimHitsMap="measurement_simhits_map",
+                filePath=str(outputDirRoot / f"hypergraph_{name}.root"),
+                treeName="hypergraph"
+            )
+            s.addWriter(HypergraphWriter)            
 
         if writeStates:
             trackStatesWriter = acts.examples.RootTrackStatesWriter(
