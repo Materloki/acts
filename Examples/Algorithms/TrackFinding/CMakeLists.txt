@@ -14,6 +14,7 @@ acts_add_library(
     src/TrackParamsLookupEstimation.cpp
     src/GridTripletSeedingAlgorithm.cpp
     src/OrthogonalTripletSeedingAlgorithm.cpp
+    src/ParametrizedExtrapolationAlgorithm.cpp
 )
 
 target_include_directories(

@@ -2595,3 +2595,27 @@ def addHoughVertexFinding(
         )
 
     return s
+
+def AddParamExtrapolator(
+    s: acts.examples.Sequencer,
+    trackingGeometry: acts.TrackingGeometry,
+    logLevel: Optional[acts.logging.Level] = None,
+) -> None:
+    """This function steers the seeding
+
+    Parameters
+    ----------
+
+    """
+
+    customLogLevel = acts.examples.defaultLogging(s, logLevel)
+
+    ParametrizedExtrapolator = acts.examples.ParametrizedExtrapolationAlgorithm(
+        level=customLogLevel(),
+        inputMeasurements = "measurements",
+        inputSeeds = "estimatedseeds",
+        trackingGeometry = trackingGeometry
+    )
+    s.addAlgorithm(ParametrizedExtrapolator)
+    
+    return s

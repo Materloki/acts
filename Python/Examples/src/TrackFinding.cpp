@@ -24,6 +24,7 @@
 #include "ActsExamples/TrackFinding/TrackFindingAlgorithm.hpp"
 #include "ActsExamples/TrackFinding/TrackParamsEstimationAlgorithm.hpp"
 #include "ActsExamples/TrackFinding/TrackParamsLookupEstimation.hpp"
+#include "ActsExamples/TrackFinding/ParametrizedExtrapolationAlgorithm.hpp"
 #include "ActsPython/Utilities/Helpers.hpp"
 #include "ActsPython/Utilities/Macros.hpp"
 
@@ -31,7 +32,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -147,7 +147,7 @@ void addTrackFinding(py::module& mex) {
 
   ACTS_PYTHON_DECLARE_ALGORITHM(
       HoughTransformSeeder, mex, "HoughTransformSeeder", inputSpacePoints,
-      outputProtoTracks, trackingGeometry, geometrySelection, inputMeasurements,
+      outputSeeds, outputProtoTracks, trackingGeometry, geometrySelection, inputMeasurements,
       subRegions, nLayers, xMin, xMax, yMin, yMax, houghHistSize_x,
       houghHistSize_y, hitExtend_x, threshold, localMaxWindowSize, kA);
 
@@ -169,6 +169,11 @@ void addTrackFinding(py::module& mex) {
       magneticField, bFieldMin, initialSigmas, initialSigmaQoverPt,
       initialSigmaPtRel, initialVarInflation, noTimeVarInflation,
       particleHypothesis);
+
+  ACTS_PYTHON_DECLARE_ALGORITHM(
+    ParametrizedExtrapolationAlgorithm, mex, "ParametrizedExtrapolationAlgorithm",
+    inputSeeds, inputMeasurements, trackingGeometry);
+  
 
   ACTS_PYTHON_DECLARE_ALGORITHM(
       TrackParamsLookupEstimation, mex, "TrackParamsLookupEstimation",
